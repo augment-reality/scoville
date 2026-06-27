@@ -1,0 +1,551 @@
+THE (REAL) STORY OF SCOVILLE
+Wilbur Scoville was born on January 22nd, 1865.
+The world would never be the same. In 1912
+Scoville developed the Scoville Organoleptic Test
+(SOT), which was used to measure the “hotness”
+of peppers. Scoville’s test is still used to measure
+the capsaicin in a pepper, expressed as Scoville
+Heat Units. Ever since, people have tried to breed
+hotter and hotter peppers.
+
+THE (FAKE) STORY OF SCOVILLE
+The town of Scoville was founded in Wilbur’s honor
+as a home for those who believe that the hottest
+peppers are the best peppers. Every year around
+this time, the town hosts the Scoville Chili Pepper
+Festival. The festival includes fundraising
+auctions for the local high school (Go Flames!),
+a huge Farmers’ Market, incredible prizes for
+growers who plant the fieriest peppers, and
+the world famous Scoville Chili Cookoff,
+where competitors try to scorch their way
+to victory with the wildest concoctions.
+The festival only lasts one day and the
+grower that can generate the most heat
+will take home this year’s trophy.
+Are you ready to feel the burn?
+
+COMPONENTS
+
+MANY* PEPPER TOKENS
+
+The peppers are everything. Plant them, harvest
+them, crossbreed them, cash them in for points in
+a variety of ways!
+
+will assemble the board jigsaw-puzzle
+1 GAME BOARD You
+style from the four segments.
+
+Farmers’ Market
+
+Auction House
+
+Chili Cookoff
+
+Red
+
+Yellow
+
+Brown
+
+White
+
+Blue
+
+Green
+
+Orange
+
+Purple
+
+Black Phantom
+*Peppers are technically unlimited in the game. If you run out
+of a color you need, use something suitable as a substitute.
+
+6 PLAYER SCREENS
+
+For hiding your stuff from other players.
+
+6 FARMERS
+
+These guys move around
+to harvest peppers.
+
+Scoville City Hall
+
+The Pepper Field
+
+6 DISCS
+
+These show
+turn order.
+
+Turn Order Track
+
+65 AUCTION CARDS
+
+48 MARKET CARDS
+
+30 RECIPE CARDS
+
+Players bid on these for extra peppers.
+30 from the Morning and 35 from the
+Afternoon batches.
+
+Players can sell peppers for varying
+rewards involving cash, peppers, and
+points. 24 each from the Morning and
+Afternoon batches.
+
+Big points are available at the Chili
+Cookoff by trading in the displayed
+combination of peppers.
+
+Item(s) up for auction
+
+Peppers
+wanted
+
+Rewards
+
+Peppers
+needed
+
+Point
+value
+
+12 AWARD
+PLAQUES
+
+A BUNCH
+OF COINS
+
+18 BONUS
+ACTION TILES
+
+4 BREEDING
+CHARTS
+
+Players can win these
+for extra points by
+planting the pepper
+color shown.
+
+Cash, in a variety of
+denominations. Use
+coins to bid for turn
+order, and earn points
+for your bankroll at the
+end of the game.
+
+Use these special actions on
+your turn to get an edge on the
+competition, or save them for
+extra points at game end.
+
+Keep these handy to remind yourself
+how peppers combine to produce
+hotter and more valuable peppers!
+There’s a player aid on the back, too.
+
+SETTING UP
+A. General: Assemble the board in your play area. Make piles (separated by color) of the peppers nearby. Make a coin bank as well.
+B. Players: Give each player a Screen and the farmer and disc in their color, one of each Bonus Action tile, $10 worth of coins,
+and three peppers: red, yellow, and blue. Players should set up their screens to hide their stuff behind them during play.
+C. Farmers’ Market: Shuffle the Morning deck of Market cards, then draw a number of cards according to your number of players
+as shown on the board; lay them beside the board face up. Return the remainder of the Morning deck to the box, but shuffle the
+Afternoon deck and keep it on the board where shown. (On the large square empty table.)
+D. Chili Cookoff: Shuffle the deck of Recipe cards, then draw a number of cards according to your number of players as
+shown on the board; lay them beside the board face up, overlapping them as shown to save room. It’s a good idea to
+order them by score from lowest to highest as shown. Return the remainder of the Recipe deck to the box.
+E. Auction House: Shuffle the Morning and Afternoon Auction decks and place them face down near the Auction House.
+Draw cards equal to the number of players from the Morning deck and place them face up in the slots on the board.
+Place the remainder of the Morning deck, plus the entire Afternoon deck, face down nearby.
+F. City Hall: Separate the Award Plaques by pepper color and stack them in the matching spots on the roof
+of City Hall, making sure that higher-valued plaques are on top of lower-valued plaques. If this is a 2p or
+3p game, remove one plaque (the most valuable plaque) from each stack and return those to the box.
+G. Starting Plots: Take a red, a yellow, and a blue cube into your hand. Randomly choose two of those to place
+on the Starting Plots of the pepper field (marked with green outlines). Return the third pepper to the supply.
+H. Turn Order: Take each player’s disc and randomly place them onto spots on the Turn Order Track. Do not
+use any spots on the track numbered higher than the number of players. (For example in a 3p game, don’t use
+the 4, 5, and 6 spaces; you might want to place a coin on unusable spaces as a reminder.)
+I. Breeding Charts: Keep these handy so that players can refer to them.
+The example below shows a setup for a 3-player game.
+Throughout the rules examples, we will call our Green player
+“Greg”, our Red player “Ruth”, and our Yellow player “Yuri”.
+
+GAMEPLAY
+Each game of Scoville consists of a variable number of rounds. Each round is made of these five phases:
+
+1. AUCTION (Players bid for turn order and claim Auction cards.)
+2. PLANTING (Players plant peppers and can win Award Plaques.)
+3. HARVESTING (Players move their Farmers up to 3 steps, breeding peppers as they go.)
+4. FULFILLMENT (Players may fulfill a Market card, fulfill a Recipe, and sell one pepper color.)
+5. TIME CHECK (Check if Morning has progressed to Afternoon... or Afternoon to Endgame.)
+
+1. AUCTION
+
+In the Auction phase, all players bid coins for choice of turn order, then in turn order they claim Auction cards.
+
+BIDDING FOR TURN ORDER
+Note: There is no bid for turn order in the very first round of
+the game; turn order was randomly established during Setup. In
+all other rounds, players will be bidding for turn order.
+First slide the discs off the turn order track up onto the faint circles
+above, preserving the turn order from the previous round.
+To bid, each player secretly selects any amount of their own
+coins (including possibly zero) and holds it in their hand. When
+all players are ready, everyone simultaneously reveals their bids.
+
+Example: The bids are revealed. Greg bid 7 while Ruth
+and Yuri both bid 5. Greg chooses first. He wants to lead
+in the Harvesting phase—which works in reverse turn
+order—so he chooses space 3.
+
+The player who bid the highest chooses their spot on the
+turn order track and moves their disc there, then the nexthighest bidder, and so on until everyone has chosen their
+spot. Players pay their bids into the bank as they go.
+
+Ruth and Yuri’s bids tied, so they choose in the previous
+round’s turn order. Ruth chooses space 1, so Yuri (left
+with no choice) ends up in space 2.
+
+• In the event of a tied bid (of greater than zero), the tied player
+who was earlier in the previous turn order chooses first.
+• Players who bid zero do not get to choose their spot on the
+track. After every player who bid greater than zero has chosen,
+zero-bidders drop down (in previous turn order) into the available
+spaces on the track, from lowest-numbered to highest.
+
+CLAIMING AUCTION CARDS
+In the new turn order, each player chooses one of the cards
+currently in the Auction House. The player takes the pepper(s)
+shown on the card from the supply and discards the card.
+
+The new turn order is Ruth, Yuri, Greg. Ruth chooses the
+purple pepper card, then Yuri chooses the yellow + blue
+pepper card, then Greg takes the remaining red pepper card.
+Each player discards their card and takes the shown pepper
+from the supply. Then the Auction house is refreshed with
+three new cards from the Morning draw deck.
+
+After all players have chosen, draw new cards from the deck to refill
+the Auction House. (Use the Morning deck if it’s still Morning, Afternoon
+deck if it’s Afternoon.) In the rare event that the deck runs out, shuffle
+the discards (of the appropriate deck) to form a new deck.
+
+2. PLANTING
+In the Planting phase, all players (in turn order) must plant one
+pepper. To plant a pepper, the player selects any pepper from their
+own supply and places it in an empty plot of the pepper field.
+• A player’s pepper may only be planted in a plot that is horizontally
+or vertically adjacent to a plot that already has a pepper in it.
+
+Example: Ruth goes first. She could plant one of
+her peppers in any of the spots marked with a
+checkmark. The spots with red Xs on them are not
+legal because they are not horizontally or vertically
+adjacent to a planted plot.
+Ruth eventually
+decides to plant
+her purple pepper
+in the spot shown.
+
+• A player may plant one extra pepper by using a certain
+Bonus Action tile. (See Bonus Action Tiles for details.)
+
+AWARD PLAQUES
+If a player plants a pepper of a color for which any Award plaques still
+remain on City Hall, the player may collect the most valuable of those
+plaques. (Plaques should be stacked with the most valuable on top.)
+• The plaques with the striped pepper on them refer to the
+planting of a Purple or Orange or Green pepper.
+• A maximum of one plaque may be earned by each player per
+round, even if the player uses the Bonus Action tile to plant a
+second pepper that would also qualify for a plaque.
+
+Example: Ruth planted a purple pepper, and there are
+still purple/orange/green plaques on City Hall. Ruth
+claims the most-valuable matching plaque, earning
+herself an easy two points!
+
+• A player may earn more than one plaque of the same color,
+providing that they are earned in different rounds.
+
+3. HARVESTING
+
+In the Harvesting phase, each player (in reverse turn order) moves their
+farmer up to three steps along the plot paths, earning a pepper for each
+step ending between two planted plots.
+
+plot
+
+paths
+
+notch directly
+between plots
+A and B
+
+• In the first round, each player on their turn first places their farmer
+on the star, (facing either direction) then begins their movement.
+In later turns, farmers begin their movement from wherever they sit.
+• Farmers may move up to three steps but must move at least one step.
+One step consists of sliding the farmer along the paths between the
+plots until the farmer is in the notches directly between two plots
+(or in the notch beside a plot if traveling along the outside edge of the
+field). It is irrelevant whether the plots are planted or not.
+• Farmers may not pass through nor stop on an opponent’s farmer.
+(In the rare case that a farmer is totally blocked and can not move even
+one step, the player must skip their turn in this Harvesting phase.)
+
+Example: It’s Greg’s turn, and it’s the first round.
+He places his farmer pawn on the star and begins.
+
+• A farmer may be pivoted at the start of a turn to start moving in any
+direction, but once it has begun movement it may not be “turned
+around” to face the opposite direction. Because of this it will not be
+possible to move along any portion of path already traveled this turn.
+
+Step 1 takes him between an empty plot and a
+yellow pepper, so he harvests nothing.
+
+• When a farmer’s step ends between two planted plots, the
+farmer harvests a pepper. The player collects a pepper (or
+peppers) according to the Breeding chart.
+• See Crossbreeding on the next page to learn how to read the
+Breeding chart to harvest better and hotter peppers!
+
+(This initial placement on the star is not a “step”;
+the player doesn’t harvest anything.)
+
+Step 2 takes him between an orange and
+purple pepper, so he checks the Breeding
+chart; he harvests a white pepper!
+Step 3 takes him between two orange
+peppers. Checking the chart again, he
+sees that this earns him a black pepper!
+Next round, his farmer will begin movement from
+that spot between the two orange peppers.
+
+CROSSBREEDING
+When a farmer ends a step between two peppers, the player gets to crossbreed the peppers and collect the resulting pepper(s) from the supply.
+Players will learn many of the combinations quite quickly, but its always
+good to check the Breeding chart to confirm the crossbreeding results.
+To use the Breeding chart, find one of the peppers in the left column of
+the chart, then follow its row across until it reaches the other pepper’s
+column. The place where the row and column meet display the result of
+the crossbreed.
+• Most combinations result in a single pepper for the player.
+• Some combinations result in two peppers for the player.
+• Some combinations (all involving brown peppers) result in an
+X on the chart, which means the player collects no pepper.
+
+Example 1: Your farmer is between two blue peppers.
+The blue row and the blue column meet where shown;
+you collect two blue peppers!
+Example 2: Your farmer is between an orange and
+purple pepper. The orange row and purple column meet
+where shown; you collect a white pepper!
+Example 3: Your farmer is between a brown and
+orange pepper. The brown row and orange column
+meet where shown; you collect nothing!
+
+4. FULFILLMENT
+In the Fulfillment phase, all players (in turn order) may perform any or all of the following actions. The player
+may perform his or her actions in any order, but may only perform each action at most once per round.
+
+VISIT THE FARMERS’ MARKET
+
+The player may choose one Market card available in
+the Farmers’ Market display. The player pays the
+peppers shown on the “wanted” side of the card to
+the supply, and earns the reward(s) shown on the
+other side. The player keeps the Market card behind
+his or her screen.
+
+COMPETE AT THE CHILI COOKOFF
+The player may choose one Recipe card available
+in the Chili Cookoff display. The player pays the
+combination of peppers shown on the card to
+the supply, then keeps the Recipe card behind
+his or her screen.
+
+SELL A BATCH OF PEPPERS
+The player may sell at most five of one
+color of held peppers to the supply. Each
+sold pepper earns $1 for every two of that
+color pepper currently planted in the
+pepper fields.
+
+Example: Yuri chooses this Market
+card from the display. He pays the
+wanted yellow and orange peppers to
+the supply, takes a brown pepper and
+$3 from the supply, and keeps the
+Market card behind his screen. It’ll
+be worth 1 point at the end of the
+game as shown.
+Example: Yuri chooses this Recipe card
+from the Chili Cookoff display. He pays
+the 2 black, 2 brown, and 2 red peppers
+shown on the card to the supply, and
+keeps the Recipe card behind his screen.
+This’ll be worth a huge 16 points at the
+end of the game!
+
+Example: Yuri could sell up to five of one color of
+peppers that he holds. Considering the peppers that are
+currently planted in the fields:
+Red peppers are worth zero.
+Purple peppers are worth zero.
+Orange peppers are worth $1 each
+Blue peppers are worth $1 each.
+Yellow peppers are worth $2 each.
+Yuri decides to sell 3 yellow peppers; he returns them
+to the supply and collects $6 from the bank.
+
+5. TIME CHECK
+
+The game is divided into Morning and Afternoon. The game starts in the Morning, which is why the Morning
+decks of Market and Auction cards were used during setup. The Time Check phase works as follows:
+
+IF IT’S MORNING
+First, count the number of Recipe cards remaining at the Chili Cookoff.
+• If there are fewer cards than there are players (for example 2 or fewer in
+a 3-player game), then the Afternoon is skipped. One more round is
+played and the game ends after the Fulfillment phase of that round.
+Note: This does not often happen in the Morning, but it is possible.
+
+Then, count the number of Market cards remaining at the Farmers’ Market.
+• If there are at least as many cards remaining as there are players
+(for example 3 or more and it’s a 3-player game), then it is still morning.
+Start a new round!
+
+Example: In this 3-player game it’s
+morning and we see that the Farmers’
+Market is down to 1 card. This means that
+next round is the start of Afternoon.
+
+• If there are fewer cards than there are players, then the game
+progresses to afternoon.
+1. Discard any remaining morning Market cards from the Farmers’ Market,
+then Draw new Market cards from the afternoon deck to refill the
+Farmers’ Market to the same number that the game started with;
+return the remainder of the afternoon Market deck to the box.
+2. Return the morning Auction deck to the box, but leave the Auction
+cards currently in the Auction house where they are; Start a new round!
+
+We’ll discard the remaining Market card,
+deal out 9 afternoon Market cards from the
+deck (and get rid of the rest of the deck),
+and get rid of the morning Auction deck.
+
+IF IT’S AFTERNOON
+
+Count the number of Market cards remaining at the Farmers’ Market,
+and the number of Recipe cards remaining at the Chili Cookoff.
+• If there are fewer cards than there are players in one of the two
+locations, then one more round is played and the game ends after
+the Fulfillment phase of that round.
+• If there are fewer cards than there are players in both of the two
+locations, then the game ends immediately with no final round played.
+Otherwise, start a new round!
+
+Example: In this 3-player game we see that the
+Farmers’ Market is down to 2 cards, while the
+Chili Cookoff still has 3. Since only one of the
+locations has fewer cards than there are players,
+we’ll play one final round and then end the game.
+
+ENDGAME
+
+When the game ends, each player
+totals their own points. Points are
+earned in five different categories:
+Points on Market cards
+Points on Recipe cards
+Points on Award plaques
+Points on the back of unplayed Bonus Action tiles
+Every $3 = 1 point (ignore remainders)
+The player with the greatest point total wins the
+game! In the event of a tie, the tied player with the
+most coins wins.
+
+Example: At endgame, this player has 8 points worth of Market cards,
+21 points worth of Recipe cards, 7 points worth of Award plaques,
+one unused Bonus Action tile worth 4 points, and $17 which is worth
+5 points. The player’s total is 8 + 21 + 7 + 4 + 5 = 45 points. Is that
+enough to win the game? (Probably not... we are showing a low score
+here so that the example’s math is clear... but it depends on what the
+other players scored!)
+
+BONUS ACTION TILES
+Each player gets 3 Bonus Action tiles to start the game. These tiles are kept behind the player screens.
+They may be played on the player’s turn to take advantage of the tile’s benefit, and are discarded when
+played. (Players should discard the tiles face up in front of their own player screen so that everyone will be aware
+of which tiles have been used.) A player may use multiple tiles on a turn if desired. Any tile still held at the
+end of the game is worth 4 points to the player. (Points are shown on the tile backs.)
+Play during your turn in the Planting phase to plant a second pepper of your choice,
+following the normal planting rules. (Count the first pepper as an already-planted plot.)
+If the first pepper earned you an Award plaque, then this second pepper is not eligible
+to earn you an Award plaque even if it would normally qualify. (You may only earn one
+plaque per round.) It is permitted to refuse a plaque from the first pepper in order to
+claim a plaque from the second one.
+Play during your turn in the Harvesting
+phase to move a fourth step after you
+have already reached your limit of three
+steps. All normal movement and crossbreeding rules apply to this fourth step.
+Play during your turn in the Harvesting
+phase. This ability permits your farmer to
+turn around once on this turn. (To be
+clear, this does not add any steps to your
+turn; it just allows your farmer to turn
+around once only, and thus move over
+portions of path already traveled this turn.)
+Remember that you are may freely pivot
+your farmer to face whatever direction you
+want at the start of your turn.
+
+Theoretically this could allow you to loop
+all the way around a plot and end up
+back where you started. You don’t break
+the “no backtracking” rule because you
+never actually retrace your own path.
+
+Example: Greg starts where shown and moves
+two steps. Since he is facing to the left, his next
+move would normally take him to any of the three
+spots marked with red dots. If he played the
+Double Back Once tile, he could pivot to face the
+opposite direction, and his next move would take
+him to any of the spots marked with green circles.
+
+CREDITS AND THANK YOUS
+SCOVILLE GAME DESIGN
+Ed Marriott
+
+GAME DEVELOPMENT
+Seth Jaffee
+
+GRAPHIC DESIGN AND
+RULES DEVELOPMENT
+
+Published by Tasty Minstrel Games, L.L.C.
+PO BOX 442 Morgan, Utah 84050
+Copyright and Trademark 2014
+Tasty Minstrel Games, L.L.C.
+www.playtmg.com
+
+Joshua Cappel
+
+The designer would like to thank Michael Mindes & Seth Jaffee for working with a first time designer and taking a chance on me.
+The designer would also like to thank the following people for providing feedback and desiring to make the game better:
+James Slager, Jon McGee, David Felker, Gary Schweisthal, Dustin Foster, Brad & Kendra Hansen, Andrew & Kelley Marriott, Mark Wyse, Carl Klutzke, Espen
+Klausen, Neil Roberts, Scott Metzger, Grant Rodiek, Chevee Dodd, Casey Clark, Brian Holt, Brett Myers, Francois Jolie, Ryan Metzler, Andrea Dexter, Nathanuil
+Demille, Matt Worden, Tom Fennewald, Steve Dast, Peter Dast, Beth Van Maanen, Paul Texidor, Mark Tucker, Debbie Wudtke, Josh Wudtke, Paul & Elizabeth
+Spurgis, Corey Young, J. Alex Kevern, Adam MacIver, Ben Rosset, Matthew O'Malley, Eric Leath, Jeff Large, David Chott, Matt Loomis, Brian Frahm, SDG.
+And the designer would especially like to thank the Platinum Playtesters, without whom the game would not exist:
+Erin Marriott, Jeremy "J" Van Maanen, Adam "A-Game" Buckingham, Ben "Bosun" McQuiston, Michael "Zeke" Lashua
+
+

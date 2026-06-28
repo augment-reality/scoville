@@ -1,185 +1,461 @@
 /**
- *------
- * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * Scovillenew implementation : © <Your name here> <Your email address here>
- *
- * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
- * See http://en.boardgamearena.com/#!doc/Studio for more information.
- * -----
- * 
- * In this file, you are describing the logic of your user interface, in Javascript language.
- *
+ * Scoville — BGA client-side logic
  */
 
-/**
- * We create one State class per declared state on the PHP side, to handle all state specific code here.
- * onEnteringState, onLeavingState and onPlayerActivationChange are predefined names that will be called by the framework.
- * When executing code in this state, you can access the args using this.args
- */
-class PlayerTurn {
-    constructor(game, bga) {
-        this.game = game;
-        this.bga = bga;
-    }
+// ============================================================================
+// State: AuctionBid (simultaneous bidding)
+// ============================================================================
 
-    /**
-     * This method is called each time we are entering the game state. You can use this method to perform some user interface changes at this moment.
-     */
+class AuctionBid {
+    constructor(game, bga) { this.game = game; this.bga = bga; }
+
     onEnteringState(args, isCurrentPlayerActive) {
-        this.bga.statusBar.setTitle(isCurrentPlayerActive ? 
-            _('${you} must play a card or pass') :
-            _('${actplayer} must play a card or pass')
-        );
-      
         if (isCurrentPlayerActive) {
-            const playableCardsIds = args.playableCardsIds; // returned by the PlayerTurn::getArgs
-
-            // Add test action buttons in the action status bar, simulating a card click:
-            playableCardsIds.forEach(
-                cardId => this.bga.statusBar.addActionButton(_('Play card with id ${card_id}').replace('${card_id}', cardId), () => this.onCardClick(cardId))
-            ); 
-
-            this.bga.statusBar.addActionButton(_('Pass'), () => this.bga.actions.performAction("actPass"), { color: 'secondary' }); 
+            this.bga.statusBar.setTitle(_('Secretly choose a bid for turn order'));
+            const myCoins = args.player_coins[this.bga.players.getMyPlayerId()]?.coins ?? 0;
+            // Render a coin-selector UI; for now add quick buttons 0–myCoins
+            for (let amt = 0; amt <= Math.min(myCoins, 10); amt++) {
+                this.bga.statusBar.addActionButton(`$${amt}`, () => this.onBid(amt));
+            }
+        } else {
+            this.bga.statusBar.setTitle(_('Waiting for all players to bid…'));
         }
     }
+    onLeavingState() {}
 
-    /**
-     * This method is called each time we are leaving the game state. You can use this method to perform some user interface changes at this moment.
-     */
-    onLeavingState(args, isCurrentPlayerActive) {
-    }
-
-    /**
-     * This method is called each time the current player becomes active or inactive in a MULTIPLE_ACTIVE_PLAYER state. You can use this method to perform some user interface changes at this moment.
-     * on MULTIPLE_ACTIVE_PLAYER states, you may want to call this function in onEnteringState using `this.onPlayerActivationChange(args, isCurrentPlayerActive)` at the end of onEnteringState.
-     * If your state is not a MULTIPLE_ACTIVE_PLAYER one, you can delete this function.
-     */
-    onPlayerActivationChange(args, isCurrentPlayerActive) {
-    }
-
-    
-    onCardClick(card_id) {
-        console.log( 'onCardClick', card_id );
-
-        this.bga.actions.performAction("actPlayCard", { 
-            card_id,
-        }).then(() =>  {                
-            // What to do after the server call if it succeeded
-            // (most of the time, nothing, as the game will react to notifs / change of state instead, so you can delete the `then`)
-        });        
+    onBid(amount) {
+        this.bga.actions.performAction('actBid', { bid_amount: amount });
     }
 }
 
+// ============================================================================
+// State: TurnOrderChoice
+// ============================================================================
+
+class TurnOrderChoice {
+    constructor(game, bga) { this.game = game; this.bga = bga; }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            this.bga.statusBar.setTitle(_('Choose your turn order slot'));
+            for (const slot of args.available_slots) {
+                this.bga.statusBar.addActionButton(
+                    _('Slot ${n}').replace('${n}', slot),
+                    () => this.bga.actions.performAction('actChooseSlot', { slot })
+                );
+            }
+        } else {
+            this.bga.statusBar.setTitle(_('${actplayer} is choosing a turn order slot'));
+        }
+    }
+    onLeavingState() {}
+}
+
+// ============================================================================
+// State: AuctionClaim
+// ============================================================================
+
+class AuctionClaim {
+    constructor(game, bga) { this.game = game; this.bga = bga; }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            this.bga.statusBar.setTitle(_('${you} must claim an Auction card'));
+            // Cards are highlighted client-side; clicking calls onCardClick
+            this.game.highlightAuctionCards(args.auction_display, true);
+        } else {
+            this.bga.statusBar.setTitle(_('${actplayer} is claiming an Auction card'));
+        }
+    }
+    onLeavingState(args, isCurrentPlayerActive) {
+        this.game.highlightAuctionCards([], false);
+    }
+}
+
+// ============================================================================
+// State: Planting
+// ============================================================================
+
+class Planting {
+    constructor(game, bga) { this.game = game; this.bga = bga; }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            this.bga.statusBar.setTitle(_('${you} must plant a pepper'));
+            this.game.highlightValidPlots(args.valid_plots, true);
+            if (args.planted_once && this.game.myBonusTiles['extra_plant']) {
+                this.bga.statusBar.addActionButton(
+                    _('Skip second plant'), () => this.bga.actions.performAction('actSkipBonusPlant'),
+                    { color: 'secondary' }
+                );
+            }
+        } else {
+            this.bga.statusBar.setTitle(_('${actplayer} is planting a pepper'));
+        }
+    }
+    onLeavingState() { this.game.highlightValidPlots([], false); }
+}
+
+// ============================================================================
+// State: Harvesting
+// ============================================================================
+
+class Harvesting {
+    constructor(game, bga) { this.game = game; this.bga = bga; }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            this.bga.statusBar.setTitle(
+                _('${you} must move your farmer (${n}/${max} steps)')
+                    .replace('${n}', args.steps_taken)
+                    .replace('${max}', args.max_steps)
+            );
+            this.game.highlightValidNotches(args.valid_notches, true);
+
+            if (args.can_stop) {
+                this.bga.statusBar.addActionButton(
+                    _('Stop moving'), () => this.bga.actions.performAction('actEndHarvest'),
+                    { color: 'secondary' }
+                );
+            }
+            if (args.steps_taken === 3 && this.game.myBonusTiles['extra_step']) {
+                this.bga.statusBar.addActionButton(
+                    _('Use Extra Step tile'),
+                    () => this.bga.actions.performAction('actUseExtraStep')
+                );
+            }
+        } else {
+            this.bga.statusBar.setTitle(_('${actplayer} is moving their farmer'));
+        }
+    }
+    onLeavingState() { this.game.highlightValidNotches([], false); }
+}
+
+// ============================================================================
+// State: Fulfillment
+// ============================================================================
+
+class Fulfillment {
+    constructor(game, bga) { this.game = game; this.bga = bga; }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            this.bga.statusBar.setTitle(_('${you} may fulfill cards and sell peppers'));
+
+            if (args.can_market) {
+                this.game.highlightMarketCards(args.market_display, true);
+            }
+            if (args.can_recipe) {
+                this.game.highlightRecipeCards(args.recipe_display, true);
+            }
+            if (args.can_sell) {
+                this.bga.statusBar.addActionButton(
+                    _('Sell peppers'), () => this.game.openSellDialog()
+                );
+            }
+
+            this.bga.statusBar.addActionButton(
+                _('Pass'), () => this.bga.actions.performAction('actEndFulfillment'),
+                { color: 'secondary' }
+            );
+        } else {
+            this.bga.statusBar.setTitle(_('${actplayer} is in the Fulfillment phase'));
+        }
+    }
+    onLeavingState() {
+        this.game.highlightMarketCards([], false);
+        this.game.highlightRecipeCards([], false);
+    }
+}
+
+// ============================================================================
+// Main Game class
+// ============================================================================
+
 export class Game {
     constructor(bga) {
-        console.log('scovillenew constructor');
         this.bga = bga;
 
-        // Declare the State classes
-        this.playerTurn = new PlayerTurn(this, bga);
-        this.bga.states.register('PlayerTurn', this.playerTurn);
+        // Register state handlers
+        this.bga.states.register('AuctionBid',      new AuctionBid(this, bga));
+        this.bga.states.register('AuctionResolve',  null); // server-only GAME state
+        this.bga.states.register('TurnOrderChoice', new TurnOrderChoice(this, bga));
+        this.bga.states.register('AuctionClaim',    new AuctionClaim(this, bga));
+        this.bga.states.register('Planting',        new Planting(this, bga));
+        this.bga.states.register('Harvesting',      new Harvesting(this, bga));
+        this.bga.states.register('Fulfillment',     new Fulfillment(this, bga));
 
-        // Uncomment the next line to show debug informations about state changes in the console. Remove before going to production!
-        // this.bga.states.logger = console.log;
-            
-        // Here, you can init the global variables of your user interface
-        // Example:
-        // this.myGlobalValue = 0;
+        // Runtime data populated in setup()
+        this.pepperField  = {};   // key "r_c" → color
+        this.myBonusTiles = {};   // type → tile object
+        this.myPeppers    = {};   // color → count
     }
-    
-    /*
-        setup:
-        
-        This method must set up the game user interface according to current game situation specified
-        in parameters.
-        
-        The method is called each time the game interface is displayed to a player, ie:
-        _ when the game starts
-        _ when a player refreshes the game page (F5)
-        
-        "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
-    */
-    
-    setup( gamedatas ) {
-        console.log( "Starting game setup" );
+
+    // -------------------------------------------------------------------------
+    // setup
+    // -------------------------------------------------------------------------
+
+    setup(gamedatas) {
         this.gamedatas = gamedatas;
 
-        // Example to add a div on the game area
+        // Build game area scaffold
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
-            <div id="player-tables"></div>
+            <div id="scoville-wrap">
+                <div id="pepper-field"></div>
+                <div id="card-areas">
+                    <div id="auction-display"></div>
+                    <div id="market-display"></div>
+                    <div id="recipe-display"></div>
+                </div>
+            </div>
         `);
-        
-        // Setting up player boards
-        Object.values(gamedatas.players).forEach(player => {
-            // example of setting up players boards
-            this.bga.playerPanels.getElement(player.id).insertAdjacentHTML('beforeend', `
-                <span id="energy-player-counter-${player.id}"></span> Energy
-            `);
-            const counter = new ebg.counter();
-            counter.create(`energy-player-counter-${player.id}`, {
-                value: player.energy,
-                playerCounter: 'energy',
-                playerId: player.id
-            });
 
-            // example of adding a div for each player
-            document.getElementById('player-tables').insertAdjacentHTML('beforeend', `
-                <div id="player-table-${player.id}">
-                    <strong>${player.name}</strong>
-                    <div>Player zone content goes here</div>
+        // Pepper field
+        this.pepperField = {};
+        for (const [key, plot] of Object.entries(gamedatas.pepper_field)) {
+            this.pepperField[key] = plot.color;
+        }
+        this.renderPepperField(gamedatas.pepper_field);
+
+        // Player panels
+        for (const [pid, player] of Object.entries(gamedatas.players)) {
+            this.bga.playerPanels.getElement(Number(pid)).insertAdjacentHTML('beforeend', `
+                <div class="scov-panel-coins">
+                    💰 <span id="coins-${pid}">${player.coins}</span>
+                </div>
+                <div class="scov-panel-order">
+                    Turn order: <span id="order-${pid}">${player.turn_order}</span>
                 </div>
             `);
-        });
-        
-        // TODO: Set up your game interface here, according to "gamedatas"
-        
+        }
 
-        // Setup game notifications to handle (see "setupNotifications" method below)
+        // My resources
+        this.myPeppers = {};
+        for (const [color, row] of Object.entries(gamedatas.my_peppers)) {
+            this.myPeppers[color] = Number(row.count);
+        }
+
+        this.myBonusTiles = {};
+        for (const [id, tile] of Object.entries(gamedatas.my_bonus_tiles)) {
+            if (!tile.used) this.myBonusTiles[tile.tile_type] = tile;
+        }
+
+        // Cards
+        this.renderAuctionDisplay(gamedatas.auction_display);
+        this.renderMarketDisplay(gamedatas.market_display);
+        this.renderRecipeDisplay(gamedatas.recipe_display);
+
         this.setupNotifications();
-
-        console.log( "Ending game setup" );
     }
 
-    ///////////////////////////////////////////////////
-    //// Utility methods
-    
-    /*
-    
-        Here, you can defines some utility methods that you can use everywhere in your javascript
-        script. Typically, functions that are used in multiple state classes or outside a state class.
-    
-    */
+    // -------------------------------------------------------------------------
+    // Rendering helpers (stubs — replace with real art/CSS later)
+    // -------------------------------------------------------------------------
 
-    
-    ///////////////////////////////////////////////////
-    //// Reaction to cometD notifications
+    renderPepperField(plots) {
+        const field = document.getElementById('pepper-field');
+        field.innerHTML = '';
+        for (const plot of Object.values(plots)) {
+            const el = document.createElement('div');
+            el.className = `scov-plot scov-pepper-${plot.color}`;
+            el.dataset.row = plot.row;
+            el.dataset.col = plot.col;
+            el.id = `plot-${plot.row}-${plot.col}`;
+            field.appendChild(el);
+        }
+    }
 
-    /*
-        setupNotifications:
-        
-        In this method, you associate each of your game notifications with your local method to handle it.
-        
-        Note: game notification names correspond to "bga->notify->all" calls in your Game.php file.
-    
-    */
-    setupNotifications() {
-        console.log( 'notifications subscriptions setup' );
-        
-        // automatically listen to the notifications, based on the `notif_xxx` function on this class. 
-        // Uncomment the logger param to see debug information in the console about notifications.
-        this.bga.notifications.setupPromiseNotifications({
-            // logger: console.log
+    renderAuctionDisplay(cards) {
+        const area = document.getElementById('auction-display');
+        area.innerHTML = '<h3>Auction House</h3>';
+        for (const card of cards) {
+            area.insertAdjacentHTML('beforeend',
+                `<div class="scov-card scov-auction-card" id="auction-card-${card.id}"
+                      data-id="${card.id}">Card ${card.id}</div>`);
+        }
+    }
+
+    renderMarketDisplay(cards) {
+        const area = document.getElementById('market-display');
+        area.innerHTML = "<h3>Farmers' Market</h3>";
+        for (const card of cards) {
+            area.insertAdjacentHTML('beforeend',
+                `<div class="scov-card scov-market-card" id="market-card-${card.id}"
+                      data-id="${card.id}">Market ${card.id}</div>`);
+        }
+    }
+
+    renderRecipeDisplay(cards) {
+        const area = document.getElementById('recipe-display');
+        area.innerHTML = '<h3>Chili Cookoff</h3>';
+        for (const card of cards) {
+            area.insertAdjacentHTML('beforeend',
+                `<div class="scov-card scov-recipe-card" id="recipe-card-${card.id}"
+                      data-id="${card.id}">Recipe ${card.id}</div>`);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Interaction helpers called by state handlers
+    // -------------------------------------------------------------------------
+
+    highlightAuctionCards(cards, on) {
+        document.querySelectorAll('.scov-auction-card').forEach(el => {
+            el.classList.toggle('scov-selectable', false);
+            el.onclick = null;
         });
+        if (!on) return;
+        for (const card of cards) {
+            const el = document.getElementById(`auction-card-${card.id}`);
+            if (!el) continue;
+            el.classList.add('scov-selectable');
+            el.onclick = () => this.bga.actions.performAction(
+                'actClaimAuctionCard', { card_id: Number(card.id) }
+            );
+        }
     }
-    
-    // TODO: from this point and below, you can write your game notifications handling methods
-    
-    /*
-    Example:
-    async notif_cardPlayed( args ) {
-        // Note: args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-        
-        // TODO: play the card in the user interface.
+
+    highlightValidPlots(plots, on) {
+        document.querySelectorAll('.scov-plot-target').forEach(el => {
+            el.remove();
+        });
+        if (!on) return;
+        // TODO: render clickable plot targets on the field grid
+        // For each plot in plots, overlay a click target element
     }
-    */
+
+    highlightValidNotches(notchIds, on) {
+        document.querySelectorAll('.scov-notch-target').forEach(el => {
+            el.remove();
+        });
+        if (!on) return;
+        // TODO: render clickable notch targets on the field
+    }
+
+    highlightMarketCards(cards, on) {
+        document.querySelectorAll('.scov-market-card').forEach(el => {
+            el.classList.toggle('scov-selectable', false);
+            el.onclick = null;
+        });
+        if (!on) return;
+        for (const card of cards) {
+            const el = document.getElementById(`market-card-${card.id}`);
+            if (!el) continue;
+            el.classList.add('scov-selectable');
+            el.onclick = () => this.bga.actions.performAction(
+                'actFulfillMarket', { card_id: Number(card.id) }
+            );
+        }
+    }
+
+    highlightRecipeCards(cards, on) {
+        document.querySelectorAll('.scov-recipe-card').forEach(el => {
+            el.classList.toggle('scov-selectable', false);
+            el.onclick = null;
+        });
+        if (!on) return;
+        for (const card of cards) {
+            const el = document.getElementById(`recipe-card-${card.id}`);
+            if (!el) continue;
+            el.classList.add('scov-selectable');
+            el.onclick = () => this.bga.actions.performAction(
+                'actFulfillRecipe', { card_id: Number(card.id) }
+            );
+        }
+    }
+
+    openSellDialog() {
+        // TODO: show a dialog letting the player choose a colour and count
+        // For now, a basic prompt
+        const color = window.prompt('Sell which pepper colour? (red/yellow/blue/orange/green/purple/white/brown/black)');
+        if (!color) return;
+        const count = parseInt(window.prompt('How many? (1–5)') ?? '0', 10);
+        if (!count || count < 1 || count > 5) return;
+        this.bga.actions.performAction('actSellPeppers', { color, count });
+    }
+
+    // -------------------------------------------------------------------------
+    // Notifications
+    // -------------------------------------------------------------------------
+
+    setupNotifications() {
+        this.bga.notifications.setupPromiseNotifications();
+    }
+
+    async notif_pepperPlanted(args) {
+        const key = `${args.row}_${args.col}`;
+        this.pepperField[key] = args.color;
+        const field = document.getElementById('pepper-field');
+        let el = document.getElementById(`plot-${args.row}-${args.col}`);
+        if (!el) {
+            el = document.createElement('div');
+            el.id    = `plot-${args.row}-${args.col}`;
+            el.dataset.row = args.row;
+            el.dataset.col = args.col;
+            field.appendChild(el);
+        }
+        el.className = `scov-plot scov-pepper-${args.color}`;
+    }
+
+    async notif_auctionCardClaimed(args) {
+        const el = document.getElementById(`auction-card-${args.card_id}`);
+        el?.remove();
+    }
+
+    async notif_marketFulfilled(args) {
+        const el = document.getElementById(`market-card-${args.card_id}`);
+        el?.remove();
+        // Update coin display for the player
+        const coinEl = document.getElementById(`coins-${args.player_id}`);
+        if (coinEl) coinEl.textContent = Number(coinEl.textContent) + args.coins_gained;
+    }
+
+    async notif_recipeFulfilled(args) {
+        const el = document.getElementById(`recipe-card-${args.card_id}`);
+        el?.remove();
+    }
+
+    async notif_peppersSold(args) {
+        const coinEl = document.getElementById(`coins-${args.player_id}`);
+        if (coinEl) coinEl.textContent = Number(coinEl.textContent) + args.earned;
+    }
+
+    async notif_farmerMoved(args) {
+        // TODO: animate the farmer pawn to the new notch position
+    }
+
+    async notif_bidsRevealed(args) {
+        // TODO: show bid reveal animation
+    }
+
+    async notif_turnOrderChosen(args) {
+        const el = document.getElementById(`order-${args.player_id}`);
+        if (el) el.textContent = args.slot;
+    }
+
+    async notif_plaqueAwarded(args) {
+        // TODO: animate plaque from City Hall to player panel
+    }
+
+    async notif_bonusTileUsed(args) {
+        delete this.myBonusTiles[args.tile_type];
+    }
+
+    async notif_newRound(args) {
+        // TODO: visual round indicator
+    }
+
+    async notif_afternoonBegins() {
+        // TODO: visual transition
+    }
+
+    async notif_finalRound() {
+        this.bga.statusBar.setTitle(_('Final round!'));
+    }
+
+    async notif_finalScore(args) {
+        // BGA framework handles score display automatically
+    }
+
+    async notif_fulfillmentPassed() {}
 }

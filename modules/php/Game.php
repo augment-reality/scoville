@@ -1,221 +1,484 @@
 <?php
-/**
- *------
- * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * Scovillenew implementation : © <Your name here> <Your email address here>
- *
- * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
- * See http://en.boardgamearena.com/#!doc/Studio for more information.
- * -----
- *
- * Game.php
- *
- * This is the main file for your game logic.
- *
- * In this PHP file, you are going to defines the rules of the game.
- */
+
 declare(strict_types=1);
 
 namespace Bga\Games\Scovillenew;
 
-use Bga\Games\Scovillenew\States\PlayerTurn;
-use Bga\GameFramework\Components\Counters\PlayerCounter;
+require_once __DIR__ . '/material.inc.php';
+
+use Bga\Games\Scovillenew\States\AuctionBid;
+use Bga\Games\Scovillenew\States\AuctionClaim;
+use Bga\Games\Scovillenew\States\AuctionResolve;
+use Bga\Games\Scovillenew\States\EndScore;
+use Bga\Games\Scovillenew\States\Fulfillment;
+use Bga\Games\Scovillenew\States\Harvesting;
+use Bga\Games\Scovillenew\States\Planting;
+use Bga\Games\Scovillenew\States\TimeCheck;
+use Bga\Games\Scovillenew\States\TurnOrderChoice;
 
 class Game extends \Bga\GameFramework\Table
 {
-    public static array $CARD_TYPES;
+    // -------------------------------------------------------------------------
+    // Deck components (created in constructor)
+    // -------------------------------------------------------------------------
 
-    public PlayerCounter $playerEnergy;
+    public \Bga\GameFramework\Components\Deck $auctionCards;
+    public \Bga\GameFramework\Components\Deck $marketCards;
+    public \Bga\GameFramework\Components\Deck $recipeCards;
 
-    /**
-     * Your global variables labels:
-     *
-     * Here, you can assign labels to global variables you are using for this game. You can use any number of global
-     * variables with IDs between 10 and 99. If you want to store any type instead of int, use $this->globals instead.
-     *
-     * NOTE: afterward, you can get/set the global variables with `getGameStateValue`, `setGameStateInitialValue` or
-     * `setGameStateValue` functions.
-     */
     public function __construct()
     {
         parent::__construct();
 
-        $this->playerEnergy = $this->bga->counterFactory->createPlayerCounter('energy');
+        $this->auctionCards = $this->deckFactory->createDeck('auction_card');
+        $this->marketCards  = $this->deckFactory->createDeck('market_card');
+        $this->recipeCards  = $this->deckFactory->createDeck('recipe_card');
 
-        self::$CARD_TYPES = [
-            1 => [
-                "card_name" => clienttranslate('Troll'), // ...
-            ],
-            2 => [
-                "card_name" => clienttranslate('Goblin'), // ...
-            ],
-            // ...
-        ];
-
-        /* example of notification decorator.
-        // automatically complete notification args when needed
-        $this->bga->notify->addDecorator(function(string $message, array $args) {
-            if (isset($args['player_id']) && !isset($args['player_name']) && str_contains($message, '${player_name}')) {
+        // Notification decorator: fill player_name automatically
+        $this->bga->notify->addDecorator(function (string $message, array $args) {
+            if (isset($args['player_id']) && !isset($args['player_name'])
+                && str_contains($message, '${player_name}')) {
                 $args['player_name'] = $this->getPlayerNameById($args['player_id']);
             }
-        
-            if (isset($args['card_id']) && !isset($args['card_name']) && str_contains($message, '${card_name}')) {
-                $args['card_name'] = self::$CARD_TYPES[$args['card_id']]['card_name'];
-                $args['i18n'][] = ['card_name'];
-            }
-            
             return $args;
-        });*/
+        });
     }
 
-    /**
-     * Compute and return the current game progression.
-     *
-     * The number returned must be an integer between 0 and 100.
-     *
-     * This method is called each time we are in a game state with the "updateGameProgression" property set to true.
-     *
-     * @return int
-     */
-    public function getGameProgression()
+    // -------------------------------------------------------------------------
+    // Game progression
+    // -------------------------------------------------------------------------
+
+    public function getGameProgression(): int
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+        // Rough estimate: progress through recipe cards consumed
+        $numPlayers = count($this->loadPlayersBasicInfos());
+        $total = Material::DISPLAY_COUNTS[$numPlayers]['recipe'] * 2; // morning+afternoon combined
+        $remaining = (int) static::getUniqueValueFromDB(
+            "SELECT COUNT(*) FROM `recipe_card` WHERE `card_location` = 'display'"
+        );
+        if ($total <= 0) return 100;
+        $consumed = $total - $remaining;
+        return max(0, min(100, (int) round(($consumed / $total) * 100)));
     }
 
-    /**
-     * Migrate database.
-     *
-     * You don't have to care about this until your game has been published on BGA. Once your game is on BGA, this
-     * method is called everytime the system detects a game running with your old database scheme. In this case, if you
-     * change your database scheme, you just have to apply the needed changes in order to update the game database and
-     * allow the game to continue to run with your new version.
-     *
-     * @param int $from_version
-     * @return void
-     */
-    public function upgradeTableDb($from_version)
+    // -------------------------------------------------------------------------
+    // setupNewGame
+    // -------------------------------------------------------------------------
+
+    protected function setupNewGame($players, $options = []): string
     {
-//       if ($from_version <= 1404301345)
-//       {
-//            // ! important ! Use `DBPREFIX_<table_name>` for all tables
-//
-//            $sql = "ALTER TABLE `DBPREFIX_xxxxxxx` ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
-//
-//       if ($from_version <= 1405061421)
-//       {
-//            // ! important ! Use `DBPREFIX_<table_name>` for all tables
-//
-//            $sql = "CREATE TABLE `DBPREFIX_xxxxxxx` ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
+        $numPlayers = count($players);
+
+        // --- Players ---
+        $gameinfos     = $this->getGameinfos();
+        $defaultColors = $gameinfos['player_colors'];
+
+        $queryValues = [];
+        $turnOrder   = 1;
+        foreach ($players as $playerId => $player) {
+            $color = array_shift($defaultColors);
+            $queryValues[] = vsprintf("(%s, '%s', '%s', %d)", [
+                $playerId,
+                $color,
+                addslashes($player['player_name']),
+                $turnOrder++,
+            ]);
+        }
+        static::DbQuery(sprintf(
+            "INSERT INTO `player` (`player_id`, `player_color`, `player_name`, `player_turn_order`)
+             VALUES %s",
+            implode(',', $queryValues)
+        ));
+        $this->reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
+        $this->reloadPlayersBasicInfos();
+
+        $playerIds = array_keys($players);
+
+        // --- Pepper inventory: all players start with 1 red + 1 yellow + 1 blue ---
+        // (2 of the 3 will be planted below; but per rules each player picks 2 to
+        // plant and returns the 3rd — implemented as: give all 3, plant 2, return 1.
+        // For simplicity we give each player all 3 up front; the Starting Plots phase
+        // will deduct 2 when planting.)
+        foreach ($playerIds as $pid) {
+            foreach (['red', 'yellow', 'blue'] as $color) {
+                static::DbQuery(
+                    "INSERT INTO `player_pepper` (`player_id`, `pepper_color`, `count`) VALUES ($pid, '$color', 1)"
+                );
+            }
+        }
+
+        // --- Bonus tiles: 1 of each type per player ---
+        foreach ($playerIds as $pid) {
+            foreach (array_keys(Material::BONUS_TILES) as $type) {
+                static::DbQuery(
+                    "INSERT INTO `bonus_tile` (`player_id`, `tile_type`) VALUES ($pid, '$type')"
+                );
+            }
+        }
+
+        // --- Auction cards ---
+        $auctionMorning = [];
+        $auctionAfternoon = [];
+        foreach (Material::AUCTION_CARD_DEFS as $idx => $def) {
+            $deck = $def['deck'] === 'morning' ? 'morning' : 'afternoon';
+            $card = ['type' => $def['deck'], 'type_arg' => $idx];
+            if ($deck === 'morning') {
+                $auctionMorning[] = $card;
+            } else {
+                $auctionAfternoon[] = $card;
+            }
+        }
+        $this->auctionCards->createCards($auctionMorning, 'deck_morning');
+        $this->auctionCards->createCards($auctionAfternoon, 'deck_afternoon');
+        $this->auctionCards->shuffle('deck_morning');
+        $this->auctionCards->shuffle('deck_afternoon');
+
+        // Draw initial display (N = numPlayers slots)
+        $slots = Material::auctionSlots($numPlayers);
+        $this->auctionCards->pickCardsForLocation($slots, 'deck_morning', 'display');
+
+        // --- Market cards ---
+        $marketMorning = [];
+        $marketAfternoon = [];
+        foreach (Material::MARKET_CARD_DEFS as $idx => $def) {
+            $card = ['type' => $def['deck'], 'type_arg' => $idx];
+            if ($def['deck'] === 'morning') {
+                $marketMorning[] = $card;
+            } else {
+                $marketAfternoon[] = $card;
+            }
+        }
+        $this->marketCards->createCards($marketMorning, 'deck_morning');
+        $this->marketCards->createCards($marketAfternoon, 'deck_afternoon');
+        $this->marketCards->shuffle('deck_morning');
+        $this->marketCards->shuffle('deck_afternoon');
+
+        $displayCount = Material::DISPLAY_COUNTS[$numPlayers]['market'];
+        $this->marketCards->pickCardsForLocation($displayCount, 'deck_morning', 'display');
+        // Discard the remainder of the morning market deck (per rules, not needed until afternoon)
+        // Actually: rules say return remainder to box; we just leave them in deck_morning but won't use them.
+
+        // --- Recipe cards ---
+        $recipeDefs = [];
+        foreach (Material::RECIPE_CARD_DEFS as $idx => $def) {
+            $recipeDefs[] = ['type' => 'recipe', 'type_arg' => $idx];
+        }
+        $this->recipeCards->createCards($recipeDefs, 'deck');
+        $this->recipeCards->shuffle('deck');
+
+        $recipeCount = Material::DISPLAY_COUNTS[$numPlayers]['recipe'];
+        $this->recipeCards->pickCardsForLocation($recipeCount, 'deck', 'display');
+        // Discard the remainder (per rules, return to box; leave in 'deck' but unused)
+
+        // --- Award plaques ---
+        foreach (Material::AWARD_PLAQUES as $plaque) {
+            static::DbQuery(sprintf(
+                "INSERT INTO `award_plaque` (`pepper_color`, `points`) VALUES ('%s', %d)",
+                $plaque['color'],
+                $plaque['points']
+            ));
+        }
+        // For 2p/3p: remove the highest-value plaque from each stack
+        if ($numPlayers <= 3) {
+            foreach (['red', 'yellow', 'blue', 'striped', 'white', 'black'] as $color) {
+                $maxId = (int) static::getUniqueValueFromDB(
+                    "SELECT `plaque_id` FROM `award_plaque`
+                     WHERE `pepper_color` = '$color' AND `player_id` IS NULL
+                     ORDER BY `points` DESC LIMIT 1"
+                );
+                if ($maxId) {
+                    static::DbQuery("DELETE FROM `award_plaque` WHERE `plaque_id` = $maxId");
+                }
+            }
+        }
+
+        // --- Starting plots ---
+        // Per rules each player secretly takes R/Y/B, picks 2 to plant.
+        // For BGA we automate: randomly plant 2 of the 3 starting colours per player,
+        // return the third to their supply.
+        // Actually the rules say: "Randomly choose two of those [3 peppers] to place
+        // on the Starting Plots" — two SPECIFIC plots on the board, and all players
+        // do this simultaneously.  All players are planting to the SAME two starting plots,
+        // so we only do this once (the board has exactly 2 starting plots at setup).
+        // Players are NOT choosing which starting plot to put which colour on.
+        //
+        // Simplified implementation: place one random primary on each starting plot.
+        $primaries = ['red', 'yellow', 'blue'];
+        shuffle($primaries);
+        foreach (Material::STARTING_PLOTS as $plot) {
+            $color = array_shift($primaries);
+            static::DbQuery(sprintf(
+                "INSERT INTO `pepper_field` (`plot_row`, `plot_col`, `pepper_color`) VALUES (%d, %d, '%s')",
+                $plot['row'], $plot['col'], $color
+            ));
+        }
+
+        // --- Global variables ---
+        $this->globals->set('round_number', 1);
+        $this->globals->set('is_afternoon', 0);
+        $this->globals->set('final_round_mode', 0); // 0=normal, 1=one-more-round, 2=end
+        $this->globals->set('phase_player_idx', 0);
+        $this->globals->set('bid_player_idx', 0);
+        $this->globals->set('bid_order', []); // player IDs in descending bid order
+        $this->globals->set('harvest_steps', 0);
+        $this->globals->set('harvest_path', []); // notch IDs visited this harvest turn
+
+        // Round 1 skips the bid phase — go directly to AuctionClaim
+        return AuctionClaim::class;
     }
 
-    /*
-     * Gather all information about current game situation (visible by the current player).
-     *
-     * The method is called each time the game interface is displayed to a player, i.e.:
-     *
-     * - when the game starts
-     * - when a player refreshes the game page (F5)
-     */
+    // -------------------------------------------------------------------------
+    // getAllDatas — visible to the current player
+    // -------------------------------------------------------------------------
+
     protected function getAllDatas(int $currentPlayerId): array
     {
         $result = [];
-        // WARNING: We must only return information visible by the current player (using $currentPlayerId).
 
-        // Get information about players.
-        // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
-        $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` AS `id`, `player_score` AS `score` FROM `player`"
+        // Players
+        $result['players'] = $this->getCollectionFromDb(
+            "SELECT `player_id` AS `id`, `player_score` AS `score`,
+                    `player_score_aux` AS `score_aux`,
+                    `player_color` AS `color`,
+                    `player_coins` AS `coins`,
+                    `player_turn_order` AS `turn_order`,
+                    `farmer_notch`
+             FROM `player`"
         );
-        $this->playerEnergy->fillResult($result);
 
-        // TODO: Gather all information about current game situation (visible by player $currentPlayerId).
+        // Each player's pepper counts (hidden behind screen — return only current player's)
+        $result['my_peppers'] = $this->getCollectionFromDb(
+            "SELECT `pepper_color` AS `color`, `count`
+             FROM `player_pepper`
+             WHERE `player_id` = $currentPlayerId"
+        );
+
+        // Other players' pepper counts are hidden; reveal only totals (optional)
+        $result['pepper_counts'] = $this->getCollectionFromDb(
+            "SELECT `player_id`, SUM(`count`) AS `total`
+             FROM `player_pepper` GROUP BY `player_id`"
+        );
+
+        // Planted peppers on the field (public)
+        $result['pepper_field'] = $this->getCollectionFromDb(
+            "SELECT CONCAT(`plot_row`, '_', `plot_col`) AS `key`,
+                    `plot_row` AS `row`, `plot_col` AS `col`, `pepper_color` AS `color`
+             FROM `pepper_field`"
+        );
+
+        // Auction display
+        $result['auction_display'] = array_values(
+            $this->auctionCards->getCardsInLocation('display')
+        );
+
+        // Market display
+        $result['market_display'] = array_values(
+            $this->marketCards->getCardsInLocation('display')
+        );
+
+        // Recipe display
+        $result['recipe_display'] = array_values(
+            $this->recipeCards->getCardsInLocation('display')
+        );
+
+        // Current player's fulfilled market/recipe cards (for scoring display)
+        $result['my_market_cards'] = array_values(
+            $this->marketCards->getCardsInLocation('player', $currentPlayerId)
+        );
+        $result['my_recipe_cards'] = array_values(
+            $this->recipeCards->getCardsInLocation('player', $currentPlayerId)
+        );
+
+        // Award plaques still on City Hall
+        $result['city_hall_plaques'] = $this->getCollectionFromDb(
+            "SELECT `plaque_id`, `pepper_color`, `points`
+             FROM `award_plaque` WHERE `player_id` IS NULL
+             ORDER BY `pepper_color`, `points` DESC"
+        );
+
+        // Current player's earned plaques
+        $result['my_plaques'] = $this->getCollectionFromDb(
+            "SELECT `plaque_id`, `pepper_color`, `points`
+             FROM `award_plaque` WHERE `player_id` = $currentPlayerId"
+        );
+
+        // Current player's bonus tiles
+        $result['my_bonus_tiles'] = $this->getCollectionFromDb(
+            "SELECT `tile_id`, `tile_type`, `used`
+             FROM `bonus_tile` WHERE `player_id` = $currentPlayerId"
+        );
+
+        // Globals the client needs
+        $result['is_afternoon']  = $this->globals->get('is_afternoon');
+        $result['round_number']  = $this->globals->get('round_number');
+        $result['final_round']   = $this->globals->get('final_round_mode');
 
         return $result;
     }
 
-    /**
-     * This method is called only once, when a new game is launched. In this method, you must setup the game
-     *  according to the game rules, so that the game is ready to be played.
-     */
-    protected function setupNewGame($players, $options = [])
+    // -------------------------------------------------------------------------
+    // Shared helpers used by state classes
+    // -------------------------------------------------------------------------
+
+    /** All player IDs sorted by turn_order ASC */
+    public function getPlayerIdsInTurnOrder(): array
     {
-        $this->playerEnergy->initDb(array_keys($players), initialValue: 2);
-
-        // Set the colors of the players with HTML color code. The default below is red/green/blue/orange/brown. The
-        // number of colors defined here must correspond to the maximum number of players allowed for the gams.
-        $gameinfos = $this->getGameinfos();
-        $default_colors = $gameinfos['player_colors'];
-
-        foreach ($players as $player_id => $player) {
-            // Now you can access both $player_id and $player array
-            $query_values[] = vsprintf("(%s, '%s', '%s')", [
-                $player_id,
-                array_shift($default_colors),
-                addslashes($player["player_name"]),
-            ]);
-        }
-
-        // Create players based on generic information.
-        //
-        // NOTE: You can add extra field on player table in the database (see dbmodel.sql) and initialize
-        // additional fields directly here.
-        static::DbQuery(
-            sprintf(
-                "INSERT INTO `player` (`player_id`, `player_color`, `player_name`) VALUES %s",
-                implode(",", $query_values)
-            )
+        return array_column(
+            $this->getCollectionFromDb(
+                "SELECT `player_id` FROM `player` ORDER BY `player_turn_order` ASC"
+            ),
+            'player_id'
         );
+    }
 
-        $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
-        $this->reloadPlayersBasicInfos();
-
-        // Init global values with their initial values.
-
-        // Init game statistics.
-        //
-        // NOTE: statistics used in this file must be defined in your `stats.inc.php` file.
-
-        // Dummy content.
-        // $this->tableStats->init('table_teststat1', 0);
-        // $this->playerStats->init('player_teststat1', 0);
-
-        // TODO: Setup the initial game situation here.
-
-        // Activate first player once everything has been initialized and ready.
-        $this->activeNextPlayer();
-
-        return PlayerTurn::class;
+    /** All player IDs sorted by turn_order DESC (reverse, for Harvesting) */
+    public function getPlayerIdsInReverseOrder(): array
+    {
+        return array_column(
+            $this->getCollectionFromDb(
+                "SELECT `player_id` FROM `player` ORDER BY `player_turn_order` DESC"
+            ),
+            'player_id'
+        );
     }
 
     /**
-     * Example of debug function.
-     * Here, jump to a state you want to test (by default, jump to next player state)
-     * You can trigger it on Studio using the Debug button on the right of the top bar.
+     * Return the next active player for a phase that cycles forward through
+     * turn order.  Increments phase_player_idx.
+     * Returns null if all players have acted.
      */
-    public function debug_goToState(int $state = 3) {
+    public function advancePhasePlayer(array $orderedIds): ?int
+    {
+        $idx = (int) $this->globals->get('phase_player_idx');
+        $idx++;
+        $this->globals->set('phase_player_idx', $idx);
+        return $orderedIds[$idx] ?? null;
+    }
+
+    /** Reset phase player index to 0 and activate the first player in the list */
+    public function startPhaseWithFirstPlayer(array $orderedIds): void
+    {
+        $this->globals->set('phase_player_idx', 0);
+        $this->gamestate->changeActivePlayer($orderedIds[0]);
+    }
+
+    /** Give pepper(s) to a player from the supply */
+    public function givePeppers(int $playerId, array $peppers): void
+    {
+        foreach ($peppers as $color) {
+            static::DbQuery(
+                "INSERT INTO `player_pepper` (`player_id`, `pepper_color`, `count`) VALUES ($playerId, '$color', 1)
+                 ON DUPLICATE KEY UPDATE `count` = `count` + 1"
+            );
+        }
+    }
+
+    /** Return peppers to supply (deduct from player) */
+    public function takePeppers(int $playerId, array $cost): void
+    {
+        foreach ($cost as $color => $count) {
+            static::DbQuery(
+                "UPDATE `player_pepper` SET `count` = `count` - $count
+                 WHERE `player_id` = $playerId AND `pepper_color` = '$color'"
+            );
+        }
+    }
+
+    /** Check if player has enough peppers for a given cost */
+    public function playerCanAfford(int $playerId, array $cost): bool
+    {
+        foreach ($cost as $color => $needed) {
+            $have = (int) static::getUniqueValueFromDB(
+                "SELECT `count` FROM `player_pepper`
+                 WHERE `player_id` = $playerId AND `pepper_color` = '$color'"
+            );
+            if ($have < $needed) return false;
+        }
+        return true;
+    }
+
+    /** Modify a player's coin count; returns new total */
+    public function addCoins(int $playerId, int $delta): int
+    {
+        static::DbQuery(
+            "UPDATE `player` SET `player_coins` = GREATEST(0, `player_coins` + $delta)
+             WHERE `player_id` = $playerId"
+        );
+        return (int) static::getUniqueValueFromDB(
+            "SELECT `player_coins` FROM `player` WHERE `player_id` = $playerId"
+        );
+    }
+
+    /**
+     * Award a plaque (if any remain) for a given planted pepper colour.
+     * Returns the awarded plaque row, or null if none available.
+     */
+    public function awardPlaque(int $playerId, string $plantedColor): ?array
+    {
+        $category = Material::plaqueCategoryForPepper($plantedColor);
+        if ($category === null) return null;
+
+        $plaque = static::getObjectFromDB(
+            "SELECT * FROM `award_plaque`
+             WHERE `pepper_color` = '$category' AND `player_id` IS NULL
+             ORDER BY `points` DESC LIMIT 1"
+        );
+        if (!$plaque) return null;
+
+        $id = (int) $plaque['plaque_id'];
+        static::DbQuery(
+            "UPDATE `award_plaque` SET `player_id` = $playerId WHERE `plaque_id` = $id"
+        );
+        return $plaque;
+    }
+
+    /**
+     * Compute the sell value of one pepper of a given colour.
+     * Price = floor(plotsOfColor / 2) dollars each.
+     */
+    public function getPepperSellPrice(string $color): int
+    {
+        $count = (int) static::getUniqueValueFromDB(
+            "SELECT COUNT(*) FROM `pepper_field` WHERE `pepper_color` = '$color'"
+        );
+        return (int) floor($count / 2);
+    }
+
+    /**
+     * Refill the auction display from the current deck.
+     */
+    public function refillAuctionDisplay(int $numPlayers): void
+    {
+        $isAfternoon = (bool) $this->globals->get('is_afternoon');
+        $deckLoc = $isAfternoon ? 'deck_afternoon' : 'deck_morning';
+        $inDisplay = count($this->auctionCards->getCardsInLocation('display'));
+        $needed = Material::auctionSlots($numPlayers) - $inDisplay;
+        if ($needed > 0) {
+            $remaining = $this->auctionCards->countCardInLocation($deckLoc);
+            if ($remaining === 0) {
+                // Reshuffle discards into the current deck
+                $this->auctionCards->shuffle('discard');
+                static::DbQuery(
+                    "UPDATE `auction_card` SET `card_location` = '$deckLoc'
+                     WHERE `card_location` = 'discard'"
+                );
+            }
+            $this->auctionCards->pickCardsForLocation(min($needed, $remaining), $deckLoc, 'display');
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // upgradeTableDb
+    // -------------------------------------------------------------------------
+
+    public function upgradeTableDb($from_version): void {}
+
+    // -------------------------------------------------------------------------
+    // Debug helpers
+    // -------------------------------------------------------------------------
+
+    public function debug_goToState(int $state = 10): void
+    {
         $this->gamestate->jumpToState($state);
     }
-
-    /**
-     * Another example of debug function, to easily test the zombie code.
-     */
-    public function debug_playOneMove() {
-        $this->bga->debug->playUntil(fn(int $count) => $count == 1);
-    }
-
-    /*
-    Another example of debug function, to easily create situations you want to test.
-    Here, put a card you want to test in your hand (assuming you use the Deck component).
-
-    public function debug_setCardInHand(int $cardType, int $playerId) {
-        $card = array_values($this->cards->getCardsOfType($cardType))[0];
-        $this->cards->moveCard($card['id'], 'hand', $playerId);
-    }
-    */
 }
